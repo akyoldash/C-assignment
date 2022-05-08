@@ -2,7 +2,8 @@
 
 static int linePointerKisi = 0;
 static int linePointerSayi = 0;
-static boolean kisilerResult = false;
+
+int countLines();
 
 Dosya new_Dosya()
 {
@@ -11,8 +12,11 @@ Dosya new_Dosya()
 
     this->readKisi = &readKisi;
     this->readSayi = &readSayi;  
-    this->isKisilerFinished = &isKisilerFinished;   
+    this->countLines = &countLines;
+    this->countSayilar = &countSayilar;
     this->delete = &delete_Dosya;
+
+    
 
     return this;
 }
@@ -24,29 +28,22 @@ char* readKisi()
     size_t len = 0;
     size_t read;
     
-    fileptr = fopen("C:\\Users\\ahmet\\OneDrive\\Desktop\\PDP Odev2\\Kisiler.txt", "r");
+    fileptr = fopen("Kisiler.txt", "r");
 
     if (NULL == fileptr)
         printf("Kisiler.txt can't be opened");
 
     int i = 0;
-    
+
     while (getline(&line, &len, fileptr) != -1) {     
 
-        if (i == linePointerKisi)
-        {                  
+        if (linePointerKisi == i) {
             linePointerKisi++;
             fclose(fileptr);
             return line;
-        }
-            
-        i++;   
-        
-        if (feof(fileptr))
-        {
-            kisilerResult = true;
-            //printf("\nEOF, linePointerKisi: %d\n", linePointerKisi);
-        }
+        }     
+        i++;       
+     
     }
 
     fclose(fileptr);
@@ -64,26 +61,19 @@ short readSayi()
     size_t len = 0;
     size_t read;
 
-    fileptr = fopen("C:\\Users\\ahmet\\OneDrive\\Desktop\\PDP Odev2\\Sayilar.txt", "r");
+    fileptr = fopen("Sayilar.txt", "r");
 
     if (NULL == fileptr) 
         printf("Sayilar.txt can't be opened\nlinePointerSayi: %d", linePointerSayi);
     
         
-
     int i = 0;
 
     while (fscanf(fileptr, "%hu", &number))
     {    
-        if (feof(fileptr))
-        {
-            printf("\nEnd of sayilar.txt and i = %d\n", i);
-            linePointerSayi = 0;
-            fclose(fileptr);
-            return number;
-            
-        }
-        else if (i == linePointerSayi)
+        
+      
+        if (i == linePointerSayi)
         {
             linePointerSayi++;
             fclose(fileptr);
@@ -99,7 +89,39 @@ short readSayi()
     return 0;
 }
 
-boolean isKisilerFinished() { return kisilerResult; }
+
+
+int countLines() { 
+    FILE* fileptr;
+    int count_lines = 0;
+
+    fileptr = fopen("Kisiler.txt", "r");
+
+    for (char c = getc(fileptr); c != EOF; c = getc(fileptr))
+        if (c == '\n')
+            count_lines++;
+
+    fclose(fileptr); 
+
+    return count_lines; 
+}
+
+int countSayilar() {
+
+    FILE* fileptr;
+    int count_lines = 0;
+
+    fileptr = fopen("Sayilar.txt", "r");
+
+    for (char c = getc(fileptr); c != EOF; c = getc(fileptr))
+        if (c == '\n')
+            count_lines++;
+
+    fclose(fileptr);
+
+    return count_lines+1;
+
+}
 
 void delete_Dosya(const Dosya this)
 {

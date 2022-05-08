@@ -1,13 +1,23 @@
 #include "Kisi.h"
 #include<string.h>
 
-char* kisi ="";
-char* kisiArray[4];
+#define MAX_NUMBER 10000
+
+char* kisi[MAX_NUMBER];
+char* kisiArray[MAX_NUMBER][4];
+double moneyArray[MAX_NUMBER];
+float money_percentageArray[MAX_NUMBER];
 char* name_surname;
 double money;
 float money_percentage;
 int number;
+static int kisi_counter;
+static int kisi_sayisi;
 double bet;
+char* en_zengin_kisi;
+void splitKisi(int);
+void delete_Kisi(const Kisi);
+
 
 Kisi new_Kisi()
 {
@@ -22,25 +32,43 @@ Kisi new_Kisi()
 	this->setBet = &setBet;
 	this->balanceMoney = &balanceMoney;
 	this->isMoneyEnough = &isMoneyEnough;
+	this->enZenginKisiBakiye = &enZenginKisiBakiye;
+	this->getEnZenginKisi = &getEnZenginKisi;
 	this->delete = &delete_Kisi;
 
-	setKisi();
+	Dosya file = new_Dosya();
+
+	kisi_sayisi = file->countLines() + 1;
+
+	for (int i = 0; i < kisi_sayisi; i++) {
+		kisi[i] = file->readKisi();
+		splitKisi(i);
+	}
+	char* ptr;
+
+	for (int i = 0; i < kisi_sayisi; i++) {
+		moneyArray[i] = strtod(kisiArray[i][1], &ptr);
+		money_percentageArray[i] = strtof(kisiArray[i][2], &ptr);
+
+	}
+
+	file->delete(file);
 
 	return this;
 }
 
 //private method
-void splitKisi()
+void splitKisi(int index)
 {
 	//printf("splitKisi()\n");
-	if (kisi != "")
+	if (kisi[index] != "")
 	{
 		int i = 0;
-		char* p = strtok(kisi, "#");
+		char* p = strtok(kisi[index], "#");
 
 		while (p != NULL)
 		{
-			kisiArray[i++] = p;
+			kisiArray[index][i++] = p;
 			p = strtok(NULL, "#");
 		}
 		//printf("\nend of splitKisi()");
@@ -48,36 +76,16 @@ void splitKisi()
 	}
 }
 
-void setKisi()
+void setKisi(int kisiCounter)
 {
-	//printf("setkisi()\n");
-	Dosya file = new_Dosya();
-	kisi = file->readKisi();
-	//printf("kisi: %s\n", kisi);
-	splitKisi();
-	
-	name_surname = (char*)malloc(sizeof(kisiArray[0]));
-	name_surname = kisiArray[0];
-	
-
-	name_surname = kisiArray[0];
-	//printf("\nbefore sscanf\n");
-	char* eptr;
-	
-	//money = strtod(kisiArray[1], &eptr);
-	//money_percentage = strtof(kisiArray[2], &eptr);
-	money = atol(kisiArray[1]);
-	money_percentage = atof(kisiArray[2]);
-	number = atoi(kisiArray[3]);
-
-	printf("\nname_surname: %s\nmoney: %f\nmoney_percentage: %f\nnumber: %d\n", name_surname, money, money_percentage, number);
-
-	//printf("after sscanf\n");
-	file->delete(file);
-
+	kisi_counter = kisiCounter;
+	char* ptr;
+		
+	name_surname = kisiArray[kisi_counter][0];
+	money = moneyArray[kisi_counter];
+	money_percentage = money_percentageArray[kisi_counter];
+	number = atoi(kisiArray[kisi_counter][3]);
 }
-
-//48538766.570316
 
 char* getName_surname() { return name_surname; }
 
@@ -85,11 +93,15 @@ int getNumber() { return number; }
 
 double getMoney() { return money; }
 
-double getBet() { return bet;  }
+double getBet() { return bet; }
 
 void setBet() { bet = money * money_percentage; }
 
-void balanceMoney(double sum) { money += sum; }
+void balanceMoney(double sum) 
+{
+	money += sum;
+	moneyArray[kisi_counter] += sum;	
+}
 
 boolean isMoneyEnough()
 {
@@ -97,6 +109,28 @@ boolean isMoneyEnough()
 		return false;
 	return true;
 }
+	
+double enZenginKisiBakiye() {
+
+	int i;
+	int index = 0;
+	double max = moneyArray[0];
+
+	Dosya file = new_Dosya();
+	
+	for (i = 1; i < kisi_sayisi; i++)
+		if (moneyArray[i] > max)
+		{
+			max = moneyArray[i];
+			index = i;
+		}
+			
+	en_zengin_kisi = kisiArray[index][0];
+	return max;
+
+}
+
+char* getEnZenginKisi() { enZenginKisiBakiye();  return en_zengin_kisi; }
 
 void delete_Kisi(const Kisi this)
 {

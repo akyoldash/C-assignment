@@ -1,4 +1,5 @@
 #include "Oyun.h"
+#include<conio.h>
 
 int tur = 1;
 double house = 0;
@@ -26,123 +27,94 @@ void setLuckyNumber(Dosya file)
 void screen(Kisi gambler) 
 {
     
-    printf("#############################################\n"); printf("");
-    printf("##              SANSLI SAYI : %hu           ##\n", lucky_number);
-    printf("#############################################\n");
-    printf("#############################################\n");          
-    printf("##                 TUR: %d                 ##\n", tur);
-    printf("##             MASA BAKIYE: %f             ##\n", house);                
-    printf("##                                         ##\n");    
-    printf("##-----------------------------------------##\n");   
-    printf("##              EN ZENGIN KISI             ##\n");   
-    printf("##             %s %s %d           ##\n", gambler->getName_surname(),winner, gambler->getNumber());
-    printf("##               BAKIYESI: %f            ##\n", gambler->getMoney());
-    printf("#############################################\n\n"); 
+    printf("\n\n\n\n\t\t\t#############################################\n"); printf("");
+    printf("\t\t\t##              SANSLI SAYI : %2d           ##\n", lucky_number);
+    printf("\t\t\t#############################################\n");
+    printf("\t\t\t#############################################\n");          
+    printf("\t\t\t##                 TUR: %3d                ##\n", tur);
+    printf("\t\t\t##             MASA BAKIYE: %-8.0lf       ##\n", house);                
+    printf("\t\t\t##                                         ##\n");    
+    printf("\t\t\t##-----------------------------------------##\n");   
+    printf("\t\t\t##              EN ZENGIN KISI             ##\n");   
+    printf("\t\t\t##              %-20s       ##\n", gambler->getEnZenginKisi());
+    printf("\t\t\t##      BAKIYESI: %-8.0lf                 ##\n", gambler->enZenginKisiBakiye());
+    printf("\t\t\t##                                         ##\n");
+    printf("\t\t\t#############################################\n\n"); 
     
-    //system("@cls||clear");
+    system("@cls||clear");
+    
+
+}
+
+void endScreen() {
+
+    printf("\n\n\n\n\t\t\t#############################################\n");
+    printf("\t\t\t##                  TUR: %3d               ##\n", tur-1);
+    printf("\t\t\t##           MASA BAKIYE: %-8.0lf         ##\n", house);
+    printf("\t\t\t##                                         ##\n");
+    printf("\t\t\t## ----------------------------------------##\n");
+    printf("\t\t\t##                OYUN BITTI               ##\n");
+    printf("\t\t\t##                                         ##\n");
+    printf("\t\t\t##                                         ##\n");
+    printf("\t\t\t##                                         ##\n");
+    printf("\t\t\t#############################################\n\n");
 
 }
 
 void start()
 {
+
     Kisi gambler = new_Kisi();
-
     Dosya file = new_Dosya();
-
-    
-    int ctr = 1;
-    
+       
     int kisi_ctr = 0;
     
-    while (!file->isKisilerFinished())
+    int kisi_sayisi = file->countLines() + 1;
+    int lucky_number_count = file->countSayilar();
+    
+    while (tur <= lucky_number_count)
     {
-        if (!gambler->isMoneyEnough()) {
-            gambler->setKisi();
-            kisi_ctr++;
-        }
-        
         setLuckyNumber(file);
-        gambler->setBet();
-
-        gambler->balanceMoney(-gambler->getBet()); //bahis yatirilir
-        house += gambler->getBet(); //yatirilan bahis masaya eklenir
-
-        printf("The bet is: %f\n", gambler->getBet());
-        if (lucky_number == gambler->getNumber()) 
+        kisi_ctr = 0;        
+             
+        while (kisi_ctr < kisi_sayisi)
         {
-            winner = "wins";
-            house -= gambler->getBet() * 10;
-            gambler->balanceMoney(gambler->getBet() * 10);
+            
+            gambler->setKisi(kisi_ctr); 
+            gambler->setBet();
 
+            if (!gambler->isMoneyEnough()) {
+                kisi_ctr++; 
+                continue;
+            }    
+           
+            gambler->balanceMoney(-gambler->getBet()); 
+            house += gambler->getBet(); 
+            
+            if (lucky_number == gambler->getNumber())
+            {
+
+                house -= gambler->getBet() * 10;
+                gambler->balanceMoney(gambler->getBet() * 10);
+
+            }
+            else{}
+                                 
+            kisi_ctr++;
+            
+            
         }
-        else
-        {
-            winner = "loses";
-        }
-        
-     
+
         screen(gambler);
 
-        ctr++;
         tur++;
+       
     }
+    endScreen();
+    //printf("Kisi sayisi: %d", kisi_ctr);
 
-    printf("Kisi sayisi: %d", kisi_ctr);
-
-    /*
-    The bet is: 385.809887
-#############################################
-##              SANSLI SAYI : 5           ##
-#############################################
-#############################################
-##                 TUR: 28061                 ##
-##             MASA BAKIYE: 48537243.474174             ##
-##                                         ##
-##-----------------------------------------##
-##              EN ZENGIN KISI             ##
-##             Henry Hammes             ##
-##               BAKIYESI: 900.223069            ##
-#############################################
-    */
-
-
-    /*
-    * AFTER CHANHING money_percentage to float type
-    * 
-    The bet is: 385.809742
-#############################################
-##              SANSLI SAYI : 5           ##
-#############################################
-#############################################
-##                 TUR: 28061                 ##
-##             MASA BAKIYE: 48534627.666499             ##
-##                                         ##
-##-----------------------------------------##
-##              EN ZENGIN KISI             ##
-##             Henry Hammes loses 7           ##
-##               BAKIYESI: 900.222680            ##
-#############################################
-    */
-
-    /*
-    * AFTER REPLACING functions with atof and atol
     
-    The bet is: 385.807414
-#############################################
-##              SANSLI SAYI : 5           ##
-#############################################
-#############################################
-##                 TUR: 28061                 ##
-##             MASA BAKIYE: 48534176.613466             ##
-##                                         ##
-##-----------------------------------------##
-##              EN ZENGIN KISI             ##
-##             Henry Hammes loses 7           ##
-##               BAKIYESI: 900.217249            ##
-#############################################
-    
-    */
-    
+    file->delete(file);
     gambler->delete(gambler);
 }
 
